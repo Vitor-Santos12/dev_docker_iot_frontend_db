@@ -1,0 +1,30 @@
+version: '3.1'
+
+services:
+
+  db:
+    image: postgres
+    container_name: postgres
+    restart: always
+    env_file:
+      - .env.secret
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_INITDB_ARGS: args
+    # command: 
+    #   - echo "host all all all $POSTGRES_HOST_AUTH_METHOD" >> /var/lib/postgresql/data/pg_hba.conf
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql/data
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  postgres:

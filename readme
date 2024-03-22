@@ -1,0 +1,128 @@
+# Portainer 
+
+First, create the volume that Portainer Server will use to store its database:
+
+~~~
+  docker volume create portainer
+~~~
+
+Then, download and install the Portainer Server container:
+
+~~~
+  docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
+~~~
+
+Portainer Server has now been installed. You can check to see whether the Portainer Server container has started by running docker ps:
+
+~~~
+root@server:~# docker ps
+CONTAINER ID   IMAGE                          COMMAND                  CREATED       STATUS      PORTS                                                                                  NAMES             
+de5b28eb2fa9   portainer/portainer-ce:latest  "/portainer"             2 weeks ago   Up 9 days   0.0.0.0:8000->8000/tcp, :::8000->8000/tcp, 0.0.0.0:9443->9443/tcp, :::9443->9443/tcp   portainer
+~~~
+
+Logging In
+Now that the installation is complete, you can log into your Portainer Server instance by opening a web browser and going to:
+
+~~~
+https://localhost:9443
+~~~
+
+# Mosquito 
+
+Three directories have been created in the image to be used for configuration, persistent storage and logs.
+
+~~~
+/mosquitto/config
+/mosquitto/data
+/mosquitto/log
+~~~
+
+## Configuration
+
+When running the image, the default configuration values are used. To use a custom configuration file, mount a local configuration file to /mosquitto/config/mosquitto.conf
+
+~~~
+$ docker run -it -p 1883:1883 -p 9001:9001 -v mosquitto.conf:/mosquitto/config/mosquitto.conf eclipse-mosquitto
+~~~
+
+Configuration can be changed to:
+
+ * persist data to /mosquitto/data
+ * log to /mosquitto/log/mosquitto.log
+
+i.e. add the following to mosquitto.conf:
+
+persistence true
+persistence_location /mosquitto/data/
+log_dest file /mosquitto/log/mosquitto.log
+
+Note: If a volume is used, the data will persist between containers.
+Run
+
+Run a container using the new image:
+
+~~~
+$ docker run -it -p 1883:1883 -p 9001:9001 -v mosquitto.conf:/mosquitto/config/mosquitto.conf -v /mosquitto/data -v /mosquitto/log eclipse-mosquitto
+~~~
+
+Note: if the mosquitto configuration (mosquitto.conf) was modified to use non-default ports, the docker run command will need to be updated to expose the ports that have been configured.
+
+# Nodered 
+
+Quick Start
+
+To run in Docker in its simplest form just run:
+
+~~~
+    docker run -it -p 1880:1880 -v node_red_data:/data --name mynodered nodered/node-red
+~~~
+
+Let’s dissect that command:
+
+~~~
+    docker run              - run this container, initially building locally if necessary
+    -it                     - attach a terminal session so we can see what is going on
+    -p 1880:1880            - connect local port 1880 to the exposed internal port 1880
+    -v node_red_data:/data  - mount a docker named volume called `node_red_data` to the container /data directory so any changes made to flows are persisted
+    --name mynodered        - give this machine a friendly local name
+    nodered/node-red        - the image to base it on - currently Node-RED v1.2.0
+~~~
+
+To reattach to the terminal (to see logging) run:
+
+~~~
+    docker attach mynodered
+~~~
+
+If you need to restart the container (e.g. after a reboot or restart of the Docker daemon):
+
+~~~
+    docker start mynodered
+~~~
+
+and stop it again when required:
+
+~~~
+    docker stop mynodered
+~~~
+
+# Influx 
+
+[Influx](https://hub.docker.com/_/influxdb)
+
+## Using this Image - InfluxDB 2.x
+
+### Quick start
+
+Using this image is pretty easy, but there are a few things you should know.
+
+    - You should forward TCP port 8086
+    - You should mount a volume in /var/lib/influxdb2
+
+~~~
+$ docker run \
+      -p 8086:8086 \
+      -v myInfluxVolume:/var/lib/influxdb2 \
+      influxdb:latest
+~~~
+

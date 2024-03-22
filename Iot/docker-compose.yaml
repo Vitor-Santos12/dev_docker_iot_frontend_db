@@ -1,0 +1,85 @@
+# Versionamento
+version: '3.9'
+
+# Ambiente de desenvolvimento
+
+volumes:
+  nodered_data:
+  Influx_data:
+  grafana_data:
+  # portainer_data:
+  mosquitto_conf:
+  mosquitto_data:
+  mosquitto_log:
+
+services:
+
+  nodered: 
+      container_name: nodered
+      image: nodered/node-red:latest
+      ports: 
+        - 1880:1880
+      volumes:
+        - ./data:/data
+        - nodered_data:/data
+
+  # Verificar documentação
+   
+  influxdb:
+      container_name: Influxdb
+      image: influxdb:latest
+      ports: 
+        - 8086:8086
+      volumes:
+        - Influx_data:/var/lib/influxdb2
+
+  grafana:
+      container_name: grafana
+      image: grafana/grafana-enterprise
+      ports: 
+        - 3000:3000
+      volumes:
+        - grafana_data:/var/lib/grafana # criar pasta windows
+
+  # mariadb:
+  #   container_name: mariadb
+  #   image: mariadb
+  #   restart: always
+  #   environment:
+  #     MARIADB_ROOT_PASSWORD: vitormaria
+
+  # adminer:
+  #   container_name: adminer
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    ports: 
+      - 8000:8000
+      - 9443:9443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer_data:/data
+  
+  broker:
+    build:
+      context: ./mosquitto
+      dockerfile: mosquitto.dockerfile
+    container_name: mosquitto
+    ports:
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - mosquitto_conf:/mosquitto/config
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+# Local Volume
+      - ./config/mosquitto_conf:/mosquitto/config
+      - ./config/mosquitto_data:/mosquitto/data
+      - ./config/mosquitto_log:/mosquitto/log
+
+    
